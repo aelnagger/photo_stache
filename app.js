@@ -42,37 +42,41 @@ app.get('/thanks', function(req, res){
 app.post('/', function(req, res){
 	var root = '/var/photos/';
 	var dir = root + req.body.first + '_' + req.body.last;
-
-	fs.stat(dir, function(err, stat){
-		if(err || !stat.isDirectory()){
-			console.log(dir + ' does not exist. Creating now.');
-			fs.mkdirSync(dir);
-		}
-
-		var process = function(file){
-			var src = file.path;
-			var dest = dir + '/' + file.name;
-			if(!fs.existsSync(dest)){
-				fs.rename(src, dest, function(err){
-					if(err){
-						console.log(err);
-					}
-				});
+	try{
+		fs.stat(dir, function(err, stat){
+			if(err || !stat.isDirectory()){
+				console.log(dir + ' does not exist. Creating now.');
+				fs.mkdirSync(dir);
 			}
-		}
 
-		// Single file
-		if(req.files.field.path !== undefined){
-			process(req.files.field);
-		}
-		else{
-			// Multiple files.
-			for(var i in req.files.field){
-				process(req.files.field[i]);
+			var process = function(file){
+				var src = file.path;
+				var dest = dir + '/' + file.name;
+				if(!fs.existsSync(dest)){
+					fs.rename(src, dest, function(err){
+						if(err){
+							console.log(err);
+						}
+					});
+				}
 			}
-		}
-	});
-	res.json("OK")
+
+			// Single file
+			if(req.files.field.path !== undefined){
+				process(req.files.field);
+			}
+			else{
+				// Multiple files.
+				for(var i in req.files.field){
+					process(req.files.field[i]);
+				}
+			}
+		});
+		res.json("OK");
+	} catch(err){
+		console.log(err);
+		res.status(500);
+	}
 });
 
 app.listen(3000);
