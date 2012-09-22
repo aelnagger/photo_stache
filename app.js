@@ -52,13 +52,17 @@ app.post('/', function(req, res){
 			var process = function(file){
 				var src = file.path;
 				var dest = dir + '/' + file.name;
-				if(!fs.existsSync(dest)){
-					fs.rename(src, dest, function(err){
-						if(err){
-							console.log(err);
-						}
-					});
-				}
+				fs.exists(dest, function(present){
+					if(!present){
+						fs.rename(src, dest, function(err){
+							if(err){
+								console.log(err);
+							}
+						});
+					} else{
+						console.log(dest + ' was already present.');
+					}
+				});
 			}
 
 			// Single file
