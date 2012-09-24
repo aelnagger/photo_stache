@@ -49,19 +49,36 @@ app.post('/', function(req, res){
 				fs.mkdirSync(dir);
 			}
 
+			function checkDir(dir, cb){
+				fs.stat(dir, function(err, stat){
+					cb(!err && stat.isDirectory());
+				});
+			}
+
+			function checkFile(file, cb){
+				fs.stat(file, function(err, stat){
+					cb(!err && stat.isFile());
+				})
+			}
+
 			var process = function(file){
 				var src = file.path;
 				var dest = dir + '/' + file.name;
-				fs.exists(dest, function(present){
-					if(!present){
-						fs.rename(src, dest, function(err){
-							if(err){
-								console.log(err);
-							}
-						});
-					} else{
-						console.log(dest + ' was already present.');
+				checkDir(dir, function(exists){
+					if(!exists){
+						fs.mkdirSync(dir);
 					}
+					checkFile(dest, function(exists){
+						if(!exists){
+							fs.rename(src, dest, function(err){
+								console.log(err);
+							})
+						} else{
+							fs.unlink(src, function(err){
+								console.log(err);
+							})
+						}
+					});
 				});
 			}
 
