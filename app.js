@@ -11,6 +11,12 @@ app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + '/public'));
 app.use(express.bodyParser({ keepExtensions: true, uploadDir: "/var/photos" }))
 
+function logerr(err){
+	if(err){
+		console.log(err);
+	}
+}
+
 
 var blocks = {};
 
@@ -45,7 +51,7 @@ app.post('/', function(req, res){
 	try{
 		fs.stat(dir, function(err, stat){
 			if(err || !stat.isDirectory()){
-				console.log(dir + ' does not exist. Creating now.');
+				logerr(dir + ' does not exist. Creating now.');
 				fs.mkdirSync(dir);
 			}
 
@@ -70,13 +76,9 @@ app.post('/', function(req, res){
 					}
 					checkFile(dest, function(exists){
 						if(!exists){
-							fs.rename(src, dest, function(err){
-								console.log(err);
-							})
+							fs.rename(src, dest, logerr);
 						} else{
-							fs.unlink(src, function(err){
-								console.log(err);
-							})
+							fs.unlink(src, logerr);
 						}
 					});
 				});
@@ -95,7 +97,7 @@ app.post('/', function(req, res){
 		});
 		res.json("OK");
 	} catch(err){
-		console.log(err);
+		logerr(err);
 		res.status(500);
 	}
 });
